@@ -5,52 +5,42 @@
 
 @layer base {
   :root {
-    --background: 72 23% 95%;
-    --foreground: 86 10% 10%;
-    --card: 72 23% 97%;
-    --card-foreground: 86 10% 10%;
-    --popover: 72 23% 95%;
-    --popover-foreground: 86 10% 10%;
-    --primary: 86 33% 27%;
-    --primary-foreground: 72 23% 98%;
-    --secondary: 72 20% 88%;
-    --secondary-foreground: 86 33% 20%;
-    --muted: 72 15% 90%;
-    --muted-foreground: 86 10% 40%;
-    --accent: 27 56% 20%;
-    --accent-foreground: 27 56% 98%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 72 20% 85%;
-    --input: 72 20% 85%;
-    --ring: 86 33% 27%;
-    --chart-1: 86 33% 27%;
-    --chart-2: 27 56% 20%;
-    --chart-3: 45 40% 40%;
-    --chart-4: 120 20% 30%;
-    --chart-5: 200 30% 25%;
+    /* Deep Forest Darkness Theme */
+    --background: 140 20% 4%;
+    --foreground: 140 10% 98%;
+    
+    --card: 140 20% 6%;
+    --card-foreground: 140 10% 98%;
+    
+    --popover: 140 20% 5%;
+    --popover-foreground: 140 10% 98%;
+    
+    --primary: 142 50% 60%;
+    --primary-foreground: 140 20% 4%;
+    
+    --secondary: 140 15% 12%;
+    --secondary-foreground: 140 10% 98%;
+    
+    --muted: 140 15% 12%;
+    --muted-foreground: 140 10% 70%;
+    
+    --accent: 35 80% 60%;
+    --accent-foreground: 140 20% 4%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    
+    --border: 140 15% 15%;
+    --input: 140 15% 15%;
+    --ring: 142 50% 60%;
+    
     --radius: 0.75rem;
-  }
-  .dark {
-    --background: 86 20% 5%;
-    --foreground: 72 23% 95%;
-    --card: 86 20% 8%;
-    --card-foreground: 72 23% 95%;
-    --popover: 86 20% 8%;
-    --popover-foreground: 72 23% 95%;
-    --primary: 86 33% 40%;
-    --primary-foreground: 72 23% 98%;
-    --secondary: 86 15% 15%;
-    --secondary-foreground: 72 23% 95%;
-    --muted: 86 15% 15%;
-    --muted-foreground: 86 10% 65%;
-    --accent: 27 40% 45%;
-    --accent-foreground: 27 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 86 15% 20%;
-    --input: 86 15% 20%;
-    --ring: 86 33% 40%;
+
+    --chart-1: 142 50% 60%;
+    --chart-2: 35 80% 60%;
+    --chart-3: 160 60% 45%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 
@@ -59,9 +49,23 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-body antialiased;
+    @apply bg-background text-foreground antialiased font-light; /* Defaulting to light weight */
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-headline;
+    @apply font-headline font-light tracking-tight; /* Headlines also light/elegant */
   }
+}
+
+/* Custom Scrollbar for Darkness theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-muted rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-secondary;
 }
