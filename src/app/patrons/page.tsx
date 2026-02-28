@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-export default function PatronsPage() {
+export default function MembersPage() {
   const [allPatrons, setAllPatrons] = React.useState<Patron[]>(PATRONS)
   const [searchTerm, setSearchTerm] = React.useState("")
 
@@ -38,7 +38,7 @@ export default function PatronsPage() {
     const patronToDelete = allPatrons.find(p => p.id === id)
     setAllPatrons(prev => prev.filter(p => p.id !== id))
     toast({
-      title: "Patron Removed",
+      title: "Member Removed",
       description: `${patronToDelete?.name} has been removed from the registry.`,
       variant: "destructive",
     })
@@ -53,7 +53,7 @@ export default function PatronsPage() {
             <div className="flex items-center gap-4">
               <SidebarTrigger />
               <div className="h-4 w-px bg-border" />
-              <h1 className="font-headline text-2xl font-bold text-primary">Patron Management</h1>
+              <h1 className="font-headline text-2xl font-bold text-primary">Member Management</h1>
             </div>
             <RegisterPatronDialog onRegister={handleRegister} />
           </header>

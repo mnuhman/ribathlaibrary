@@ -75,7 +75,7 @@ export function RegisterPatronDialog({ onRegister }: RegisterPatronDialogProps) 
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="font-headline text-2xl text-primary">Register New Patron</DialogTitle>
+          <DialogTitle className="font-headline text-2xl text-primary">Register New Member</DialogTitle>
           <DialogDescription>
             Enter the details for the new library member.
           </DialogDescription>
