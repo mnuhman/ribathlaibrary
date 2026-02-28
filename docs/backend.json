@@ -54,7 +54,9 @@
         "libraryName": { "type": "string" },
         "contactEmail": { "type": "string" },
         "finePeriodDays": { "type": "number", "description": "Standard number of days allowed for a loan" },
-        "fineRatePerDay": { "type": "number", "description": "Currency amount charged per day for overdue items" }
+        "fineRatePerDay": { "type": "number", "description": "Currency amount charged per day for overdue items" },
+        "librarianName": { "type": "string" },
+        "librarianPhotoUrl": { "type": "string" }
       },
       "required": ["libraryName", "finePeriodDays", "fineRatePerDay"]
     }

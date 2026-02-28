@@ -9,8 +9,20 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { toast } from "@/hooks/use-toast"
-import { Library, Moon, Sun, Palette, ShieldCheck, Coins, CalendarClock, Loader2 } from "lucide-react"
+import { 
+  Library, 
+  Moon, 
+  Sun, 
+  Palette, 
+  ShieldCheck, 
+  Coins, 
+  CalendarClock, 
+  Loader2, 
+  Camera,
+  UserCircle
+} from "lucide-react"
 import { useDoc, useFirestore } from "@/firebase"
 import { doc, setDoc } from "firebase/firestore"
 import { errorEmitter } from "@/firebase/error-emitter"
@@ -26,6 +38,8 @@ export default function SettingsPage() {
   const [fineRate, setFineRate] = React.useState(0.50)
   const [libName, setLibName] = React.useState("RIBATH LIBRARY")
   const [libEmail, setLibEmail] = React.useState("admin@ribath.org")
+  const [librarianName, setLibrarianName] = React.useState("Admin User")
+  const [librarianPhotoUrl, setLibrarianPhotoUrl] = React.useState("")
 
   React.useEffect(() => {
     const theme = localStorage.getItem('theme') || 'dark'
@@ -38,6 +52,8 @@ export default function SettingsPage() {
       setFineRate(config.fineRatePerDay || 0.50)
       setLibName(config.libraryName || "RIBATH LIBRARY")
       setLibEmail(config.contactEmail || "admin@ribath.org")
+      setLibrarianName(config.librarianName || "Admin User")
+      setLibrarianPhotoUrl(config.librarianPhotoUrl || "")
     }
   }, [config])
 
@@ -59,7 +75,9 @@ export default function SettingsPage() {
       libraryName: libName,
       contactEmail: libEmail,
       finePeriodDays: Number(finePeriod),
-      fineRatePerDay: Number(fineRate)
+      fineRatePerDay: Number(fineRate),
+      librarianName: librarianName,
+      librarianPhotoUrl: librarianPhotoUrl
     }
 
     const docRef = doc(db, "settings", "config")
@@ -75,6 +93,15 @@ export default function SettingsPage() {
     toast({
       title: "Settings Saved",
       description: "Your library preferences have been updated.",
+    })
+  }
+
+  const handleRandomizeDP = () => {
+    const newPhotoUrl = `https://picsum.photos/seed/${Math.random()}/200/200`
+    setLibrarianPhotoUrl(newPhotoUrl)
+    toast({
+      title: "Photo Updated",
+      description: "A new random avatar has been generated. Remember to save changes.",
     })
   }
 
@@ -95,6 +122,57 @@ export default function SettingsPage() {
 
       <main className="flex-1 p-8 max-w-4xl space-y-8 overflow-auto">
         <div className="space-y-6">
+          <section className="space-y-4">
+            <div className="flex items-center gap-2">
+              <UserCircle className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold">Librarian Profile</h2>
+            </div>
+            <Card className="border-none shadow-md overflow-hidden">
+              <CardContent className="pt-6 flex flex-col md:flex-row items-center gap-8">
+                <div className="relative group">
+                  <Avatar className="h-24 w-24 border-4 border-secondary shadow-lg">
+                    <AvatarImage src={librarianPhotoUrl} />
+                    <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-bold">
+                      {librarianName.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Button 
+                    variant="secondary" 
+                    size="icon" 
+                    className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full shadow-lg border-2 border-background opacity-90 hover:opacity-100 transition-opacity"
+                    onClick={handleRandomizeDP}
+                  >
+                    <Camera className="h-5 w-5" />
+                  </Button>
+                </div>
+                <div className="flex-1 space-y-4 w-full">
+                  <div className="grid gap-2">
+                    <Label htmlFor="librarian-name">Admin Display Name</Label>
+                    <Input 
+                      id="librarian-name" 
+                      value={librarianName} 
+                      onChange={(e) => setLibrarianName(e.target.value)}
+                      placeholder="e.g. Chief Librarian"
+                      className="bg-background border-border" 
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="photo-url">Photo URL (Direct Link)</Label>
+                    <Input 
+                      id="photo-url" 
+                      value={librarianPhotoUrl} 
+                      onChange={(e) => setLibrarianPhotoUrl(e.target.value)}
+                      placeholder="https://example.com/photo.jpg"
+                      className="bg-background border-border" 
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+
+          <Separator className="bg-border" />
+
           <section className="space-y-4">
             <div className="flex items-center gap-2">
               <Library className="h-5 w-5 text-primary" />
