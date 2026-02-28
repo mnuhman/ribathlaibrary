@@ -55,7 +55,7 @@ export default function FinesPage() {
     if (today > dueDate) {
       const diffTime = today.getTime() - dueDate.getTime()
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-      return diffDays * 0.50
+      return diffDays * 0.50 // Standard fine rate
     }
     return 0
   }, [today])
@@ -144,7 +144,7 @@ export default function FinesPage() {
                 <CardContent className="p-6 flex items-center justify-between">
                   <div className="space-y-1">
                     <p className="text-sm font-medium opacity-80 uppercase tracking-wider">Estimated Total Fines</p>
-                    <p className="text-3xl font-bold">${totalFines.toFixed(2)}</p>
+                    <p className="text-3xl font-bold">₹{totalFines.toFixed(2)}</p>
                   </div>
                   <Coins className="h-10 w-10 opacity-20" />
                 </CardContent>
@@ -221,9 +221,9 @@ export default function FinesPage() {
                               {(currentFine > 0 || loan.fineAmount > 0) ? (
                                 <div className="flex flex-col">
                                   <span className="text-destructive font-bold">
-                                    ${Math.max(currentFine, loan.fineAmount).toFixed(2)}
+                                    ₹{Math.max(currentFine, loan.fineAmount).toFixed(2)}
                                   </span>
-                                  <span className="text-[10px] text-muted-foreground uppercase">Rate: $0.50/day</span>
+                                  <span className="text-[10px] text-muted-foreground uppercase">Rate: ₹0.50/day</span>
                                 </div>
                               ) : (
                                 <span className="text-muted-foreground">-</span>
