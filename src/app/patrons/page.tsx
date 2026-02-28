@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -8,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, Hash, Phone, MoreVertical, Trash2, Loader2 } from "lucide-react"
+import { Search, Hash, Users, MoreVertical, Trash2, Loader2 } from "lucide-react"
 import { RegisterPatronDialog } from "@/components/patrons/register-patron-dialog"
 import { toast } from "@/hooks/use-toast"
 import {
@@ -35,7 +36,8 @@ export default function MembersPage() {
     if (!members) return []
     return members.filter(p => 
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (p.idNumber || "").toLowerCase().includes(searchTerm.toLowerCase())
+      (p.idNumber || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.batch || "").toLowerCase().includes(searchTerm.toLowerCase())
     )
   }, [searchTerm, members])
 
@@ -74,7 +76,7 @@ export default function MembersPage() {
               <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input 
-                  placeholder="Search members by name or ID..." 
+                  placeholder="Search members by name, ID or batch..." 
                   className="pl-10 bg-card border-none shadow-sm"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -136,8 +138,8 @@ export default function MembersPage() {
                           <span className="truncate">ID: {member.idNumber}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Phone className="h-4 w-4" />
-                          <span>{member.phone}</span>
+                          <Users className="h-4 w-4" />
+                          <span className="truncate">Batch: {member.batch}</span>
                         </div>
                       </div>
                       

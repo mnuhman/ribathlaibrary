@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Book": {
@@ -23,11 +24,11 @@
       "properties": {
         "name": { "type": "string" },
         "idNumber": { "type": "string", "description": "Unique member identification number" },
-        "phone": { "type": "string" },
+        "batch": { "type": "string", "description": "The student or member batch identifier" },
         "joinedDate": { "type": "string", "format": "date" },
         "status": { "type": "string", "enum": ["Active", "Suspended"] }
       },
-      "required": ["name", "idNumber", "phone", "joinedDate", "status"]
+      "required": ["name", "idNumber", "batch", "joinedDate", "status"]
     },
     "Loan": {
       "title": "Loan",

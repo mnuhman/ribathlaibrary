@@ -14,8 +14,8 @@ export interface Book {
 export interface Patron {
   id: string;
   name: string;
-  email: string;
-  phone: string;
+  idNumber: string;
+  batch: string;
   joinedDate: string;
   status: 'Active' | 'Suspended';
 }
@@ -23,7 +23,7 @@ export interface Patron {
 export interface Loan {
   id: string;
   bookId: string;
-  patronId: string;
+  memberId: string;
   checkoutDate: string;
   dueDate: string;
   returnDate?: string;
@@ -82,24 +82,24 @@ export const PATRONS: Patron[] = [
   {
     id: 'p1',
     name: 'Alice Johnson',
-    email: 'alice@example.com',
-    phone: '555-0101',
+    idNumber: 'RIB-001',
+    batch: '2024-A',
     joinedDate: '2023-01-15',
     status: 'Active',
   },
   {
     id: 'p2',
     name: 'Bob Smith',
-    email: 'bob@example.com',
-    phone: '555-0102',
+    idNumber: 'RIB-002',
+    batch: '2024-B',
     joinedDate: '2023-03-22',
     status: 'Active',
   },
   {
     id: 'p3',
     name: 'Charlie Davis',
-    email: 'charlie@example.com',
-    phone: '555-0103',
+    idNumber: 'RIB-003',
+    batch: '2023-C',
     joinedDate: '2022-11-05',
     status: 'Suspended',
   }
@@ -109,7 +109,7 @@ export const LOANS: Loan[] = [
   {
     id: 'l1',
     bookId: '1',
-    patronId: 'p1',
+    memberId: 'p1',
     checkoutDate: '2024-05-01',
     dueDate: '2024-05-15',
     fineAmount: 0,
@@ -118,7 +118,7 @@ export const LOANS: Loan[] = [
   {
     id: 'l2',
     bookId: '2',
-    patronId: 'p2',
+    memberId: 'p2',
     checkoutDate: '2024-04-10',
     dueDate: '2024-04-24',
     fineAmount: 15.50,
