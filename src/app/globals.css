@@ -5,42 +5,42 @@
 
 @layer base {
   :root {
-    /* Deep Forest Darkness Theme */
-    --background: 140 20% 4%;
-    --foreground: 140 10% 98%;
+    /* Deep Ocean Darkness Theme */
+    --background: 222 47% 4%;
+    --foreground: 210 40% 98%;
     
-    --card: 140 20% 6%;
-    --card-foreground: 140 10% 98%;
+    --card: 222 47% 6%;
+    --card-foreground: 210 40% 98%;
     
-    --popover: 140 20% 5%;
-    --popover-foreground: 140 10% 98%;
+    --popover: 222 47% 5%;
+    --popover-foreground: 210 40% 98%;
     
-    --primary: 142 50% 60%;
-    --primary-foreground: 140 20% 4%;
+    --primary: 217 91% 60%; /* Sophisticated Dark Blue */
+    --primary-foreground: 222 47% 4%;
     
-    --secondary: 140 15% 12%;
-    --secondary-foreground: 140 10% 98%;
+    --secondary: 222 47% 12%;
+    --secondary-foreground: 210 40% 98%;
     
-    --muted: 140 15% 12%;
-    --muted-foreground: 140 10% 70%;
+    --muted: 222 47% 12%;
+    --muted-foreground: 215 20% 65%;
     
     --accent: 35 80% 60%;
-    --accent-foreground: 140 20% 4%;
+    --accent-foreground: 222 47% 4%;
     
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
     
-    --border: 140 15% 15%;
-    --input: 140 15% 15%;
-    --ring: 142 50% 60%;
+    --border: 222 47% 15%;
+    --input: 222 47% 15%;
+    --ring: 217 91% 60%;
     
     --radius: 0.75rem;
 
-    --chart-1: 142 50% 60%;
+    --chart-1: 217 91% 60%;
     --chart-2: 35 80% 60%;
-    --chart-3: 160 60% 45%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --chart-3: 199 89% 48%;
+    --chart-4: 262 83% 58%;
+    --chart-5: 316 70% 50%;
   }
 }
 
@@ -49,10 +49,10 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased font-light; /* Defaulting to light weight */
+    @apply bg-background text-foreground antialiased font-light;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-headline font-light tracking-tight; /* Headlines also light/elegant */
+    @apply font-headline font-light tracking-tight;
   }
 }
 
