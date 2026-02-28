@@ -15,8 +15,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
   useSidebar
 } from "@/components/ui/sidebar"
 
@@ -24,7 +22,7 @@ const navItems = [
   { title: "Dashboard", icon: LayoutDashboard, href: "/" },
   { title: "Catalog", icon: BookOpen, href: "/catalog" },
   { title: "Patrons", icon: Users, href: "/patrons" },
-  { title: "Loans", icon: ClipboardList, href: "/loans" },
+  { title: "Loans & Fines", icon: ClipboardList, href: "/loans" },
   { title: "Search", icon: Search, href: "/search" },
 ]
 
