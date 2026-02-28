@@ -28,7 +28,10 @@ import { FirestorePermissionError } from "@/firebase/errors"
 export default function MembersPage() {
   const db = useFirestore()
   const membersRef = React.useMemo(() => db ? collection(db, "members") : null, [db])
-  const { data: members, loading } = useCollection(membersRef)
+  const loansRef = React.useMemo(() => db ? collection(db, "loans") : null, [db])
+  
+  const { data: members, loading: membersLoading } = useCollection(membersRef)
+  const { data: loans } = useCollection(loansRef)
   
   const [searchTerm, setSearchTerm] = React.useState("")
 
@@ -55,6 +58,11 @@ export default function MembersPage() {
       description: `${name} has been removed from the registry.`,
       variant: "destructive",
     })
+  }
+
+  const getActiveLoanCount = (memberId: string) => {
+    if (!loans) return 0
+    return loans.filter(l => l.memberId === memberId && l.status !== 'Returned').length
   }
 
   return (
@@ -84,7 +92,7 @@ export default function MembersPage() {
               </div>
             </div>
 
-            {loading ? (
+            {membersLoading ? (
               <div className="flex flex-col items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 <p className="mt-2 text-muted-foreground">Loading members...</p>
@@ -112,7 +120,7 @@ export default function MembersPage() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Options</DropdownMenuLabel>
                               <DropdownMenuItem>View Profile</DropdownMenuItem>
-                              <DropdownMenuItem>Loan History</DropdownMenuItem>
+                              <DropdownMenuItem>Fine History</DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
                                 className="text-destructive flex items-center gap-2"
@@ -145,8 +153,8 @@ export default function MembersPage() {
                       
                       <div className="pt-4 border-t border-border flex items-center justify-between">
                         <div className="flex flex-col">
-                          <span className="text-xs font-semibold text-muted-foreground uppercase">Active Loans</span>
-                          <span className="text-lg font-bold text-primary">0</span>
+                          <span className="text-xs font-semibold text-muted-foreground uppercase">Active Fines</span>
+                          <span className="text-lg font-bold text-primary">{getActiveLoanCount(member.id)}</span>
                         </div>
                         <Button variant="ghost" size="sm" className="text-accent hover:text-accent/80 font-semibold h-8 px-2">
                           View Details
@@ -157,7 +165,7 @@ export default function MembersPage() {
                 ))}
               </div>
             )}
-            {!loading && filteredMembers.length === 0 && (
+            {!membersLoading && filteredMembers.length === 0 && (
               <div className="flex flex-col items-center justify-center h-64 space-y-4 text-center">
                 <Search className="h-12 w-12 text-muted-foreground opacity-20" />
                 <p className="text-lg font-medium text-muted-foreground">No members found matching your search.</p>

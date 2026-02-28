@@ -60,7 +60,7 @@ export default function Dashboard() {
         loading: membersLoading
       },
       { 
-        title: "Active Loans", 
+        title: "Active Fines", 
         value: activeLoans.length, 
         icon: ClipboardList, 
         color: "text-primary",
@@ -155,8 +155,8 @@ export default function Dashboard() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
               <Card className="lg:col-span-4 border-none shadow-md">
                 <CardHeader>
-                  <CardTitle className="font-headline text-xl text-primary">Loan Activity</CardTitle>
-                  <CardDescription>Check-out volume across current months</CardDescription>
+                  <CardTitle className="font-headline text-xl text-primary">Fine Activity</CardTitle>
+                  <CardDescription>Activity volume across current months</CardDescription>
                 </CardHeader>
                 <CardContent className="h-[350px]">
                   {loansLoading ? (
@@ -192,7 +192,7 @@ export default function Dashboard() {
                     </ResponsiveContainer>
                   ) : (
                     <div className="flex h-full items-center justify-center text-muted-foreground">
-                      No loan data available for chart
+                      No fine data available for chart
                     </div>
                   )}
                 </CardContent>
@@ -201,7 +201,7 @@ export default function Dashboard() {
               <Card className="lg:col-span-3 border-none shadow-md">
                 <CardHeader>
                   <CardTitle className="font-headline text-xl text-primary">Recent Activity</CardTitle>
-                  <CardDescription>Latest books checked out by members</CardDescription>
+                  <CardDescription>Latest items checked out by members</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
