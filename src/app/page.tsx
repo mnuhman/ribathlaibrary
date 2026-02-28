@@ -1,11 +1,12 @@
 
 "use client"
 
+import * as React from "react"
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/layout/sidebar"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { BookOpen, Users, ClipboardList, AlertCircle, TrendingUp, Clock } from "lucide-react"
-import { BOOKS, PATRONS, LOANS } from "@/lib/mock-data"
+import { BookOpen, Users, ClipboardList, AlertCircle, Clock, Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { 
   BarChart, 
   Bar, 
@@ -13,27 +14,88 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  ResponsiveContainer,
-  LineChart,
-  Line
+  ResponsiveContainer 
 } from "recharts"
-
-const stats = [
-  { title: "Total Books", value: BOOKS.length, icon: BookOpen, color: "text-blue-600" },
-  { title: "Active Patrons", value: PATRONS.length, icon: Users, color: "text-green-600" },
-  { title: "Active Loans", value: LOANS.filter(l => l.status === 'Active').length, icon: ClipboardList, color: "text-primary" },
-  { title: "Overdue Books", value: LOANS.filter(l => l.status === 'Overdue').length, icon: AlertCircle, color: "text-destructive" },
-]
-
-const chartData = [
-  { name: 'Jan', loans: 400 },
-  { name: 'Feb', loans: 300 },
-  { name: 'Mar', loans: 200 },
-  { name: 'Apr', loans: 278 },
-  { name: 'May', loans: 189 },
-];
+import { useCollection, useFirestore } from "@/firebase"
+import { collection } from "firebase/firestore"
 
 export default function Dashboard() {
+  const db = useFirestore()
+  
+  const booksRef = React.useMemo(() => db ? collection(db, "books") : null, [db])
+  const membersRef = React.useMemo(() => db ? collection(db, "members") : null, [db])
+  const loansRef = React.useMemo(() => db ? collection(db, "loans") : null, [db])
+
+  const { data: books, loading: booksLoading } = useCollection(booksRef)
+  const { data: members, loading: membersLoading } = useCollection(membersRef)
+  const { data: loans, loading: loansLoading } = useCollection(loansRef)
+
+  const [today, setToday] = React.useState<Date | null>(null)
+  React.useEffect(() => {
+    setToday(new Date())
+  }, [])
+
+  const stats = React.useMemo(() => {
+    const activeLoans = loans?.filter(l => l.status === 'Active') || []
+    const overdueLoans = loans?.filter(l => {
+      if (l.status === 'Returned') return false
+      if (l.status === 'Overdue') return true
+      if (today && new Date(l.dueDate) < today) return true
+      return false
+    }) || []
+
+    return [
+      { 
+        title: "Total Books", 
+        value: books?.length || 0, 
+        icon: BookOpen, 
+        color: "text-blue-600",
+        loading: booksLoading
+      },
+      { 
+        title: "Active Members", 
+        value: members?.filter(m => m.status === 'Active').length || 0, 
+        icon: Users, 
+        color: "text-green-600",
+        loading: membersLoading
+      },
+      { 
+        title: "Active Loans", 
+        value: activeLoans.length, 
+        icon: ClipboardList, 
+        color: "text-primary",
+        loading: loansLoading
+      },
+      { 
+        title: "Overdue Items", 
+        value: overdueLoans.length, 
+        icon: AlertCircle, 
+        color: "text-destructive",
+        loading: loansLoading
+      },
+    ]
+  }, [books, members, loans, booksLoading, membersLoading, loansLoading, today])
+
+  const chartData = [
+    { name: 'Jan', loans: 400 },
+    { name: 'Feb', loans: 300 },
+    { name: 'Mar', loans: 200 },
+    { name: 'Apr', loans: 278 },
+    { name: 'May', loans: 189 },
+  ];
+
+  const recentLoans = React.useMemo(() => {
+    if (!loans || !books || !members) return []
+    return [...loans]
+      .sort((a, b) => new Date(b.checkoutDate).getTime() - new Date(a.checkoutDate).getTime())
+      .slice(0, 4)
+      .map(loan => ({
+        ...loan,
+        bookTitle: books.find(b => b.id === loan.bookId)?.title || "Unknown Book",
+        memberName: members.find(m => m.id === loan.memberId)?.name || "Unknown Member"
+      }))
+  }, [loans, books, members])
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-background w-full">
@@ -54,10 +116,16 @@ export default function Dashboard() {
                     <stat.icon className={cn("h-5 w-5", stat.color)} />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold">{stat.value}</div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      +12% from last month
-                    </p>
+                    {stat.loading ? (
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    ) : (
+                      <>
+                        <div className="text-3xl font-bold">{stat.value}</div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Current live count
+                        </p>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
               ))}
@@ -84,29 +152,33 @@ export default function Dashboard() {
 
               <Card className="lg:col-span-3 border-none shadow-md">
                 <CardHeader>
-                  <CardTitle className="font-headline text-xl text-primary">Recent Loans</CardTitle>
-                  <CardDescription>Latest books checked out by patrons</CardDescription>
+                  <CardTitle className="font-headline text-xl text-primary">Recent Activity</CardTitle>
+                  <CardDescription>Latest books checked out by members</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
-                    {LOANS.slice(0, 4).map((loan) => {
-                      const book = BOOKS.find(b => b.id === loan.bookId)
-                      const patron = PATRONS.find(p => p.id === loan.patronId)
-                      return (
+                    {loansLoading ? (
+                      <div className="flex justify-center p-4">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                      </div>
+                    ) : recentLoans.length > 0 ? (
+                      recentLoans.map((loan) => (
                         <div key={loan.id} className="flex items-center gap-4">
                           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-primary">
                             <Clock className="h-5 w-5" />
                           </div>
                           <div className="flex-1 space-y-1">
-                            <p className="text-sm font-semibold leading-none">{book?.title}</p>
-                            <p className="text-xs text-muted-foreground">Borrowed by {patron?.name}</p>
+                            <p className="text-sm font-semibold leading-none truncate max-w-[150px]">{loan.bookTitle}</p>
+                            <p className="text-xs text-muted-foreground">By {loan.memberName}</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-xs font-medium text-muted-foreground">Due {loan.dueDate}</p>
+                            <p className="text-xs font-medium text-muted-foreground whitespace-nowrap">Due {loan.dueDate}</p>
                           </div>
                         </div>
-                      )
-                    })}
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-center py-4">No recent activity</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -117,5 +189,3 @@ export default function Dashboard() {
     </SidebarProvider>
   )
 }
-
-import { cn } from "@/lib/utils"
