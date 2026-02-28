@@ -27,9 +27,10 @@ import {
 import { Input } from "@/components/ui/input"
 import { toast } from "@/hooks/use-toast"
 import { useCollection, useFirestore } from "@/firebase"
-import { collection, doc, updateDoc } from "firebase/firestore"
+import { collection, doc, updateDoc, increment } from "firebase/firestore"
 import { errorEmitter } from "@/firebase/error-emitter"
 import { FirestorePermissionError } from "@/firebase/errors"
+import { CheckoutBookDialog } from "@/components/loans/checkout-book-dialog"
 
 function FinesContent() {
   const db = useFirestore()
@@ -79,20 +80,38 @@ function FinesContent() {
     }, 0)
   }, [activeLoans, calculateFine])
 
-  const handleReturn = (loanId: string) => {
+  const handleReturn = (loanId: string, bookId: string) => {
     if (!db) return
     const docRef = doc(db, "loans", loanId)
     const updateData = { 
       status: 'Returned', 
       returnDate: new Date().toISOString().split('T')[0] 
     }
-    updateDoc(docRef, updateData).catch(async (e) => {
+    
+    // Update loan status
+    updateDoc(docRef, updateData).then(() => {
+      // Return book to inventory
+      const bookDocRef = doc(db, "books", bookId)
+      const book = books?.find(b => b.id === bookId)
+      if (book) {
+        updateDoc(bookDocRef, {
+          available: increment(1),
+          status: 'Available'
+        }).catch(async (e) => {
+          errorEmitter.emit("permission-error", new FirestorePermissionError({
+            path: bookDocRef.path,
+            operation: "update"
+          }))
+        })
+      }
+    }).catch(async (e) => {
       errorEmitter.emit("permission-error", new FirestorePermissionError({
         path: docRef.path,
         operation: "update",
         requestResourceData: updateData
       }))
     })
+
     toast({
       title: "Book Returned",
       description: "The book has been successfully marked as returned.",
@@ -134,9 +153,7 @@ function FinesContent() {
           <h1 className="font-headline text-2xl font-bold text-primary">Fines &amp; Penalties</h1>
         </div>
         <div className="flex gap-2">
-          <Button className="gap-2">
-            <ClipboardCheck className="h-4 w-4" /> New Checkout
-          </Button>
+          <CheckoutBookDialog />
         </div>
       </header>
 
@@ -246,7 +263,7 @@ function FinesContent() {
                                 variant="outline" 
                                 size="sm" 
                                 className="h-8 gap-1"
-                                onClick={() => handleReturn(loan.id)}
+                                onClick={() => handleReturn(loan.id, loan.bookId)}
                               >
                                 <RotateCcw className="h-3 w-3" /> Return
                               </Button>
