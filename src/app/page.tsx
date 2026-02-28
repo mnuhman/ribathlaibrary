@@ -3,7 +3,7 @@
 import * as React from "react"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { BookOpen, Users, ClipboardList, AlertCircle, Clock, Loader2, TrendingUp } from "lucide-react"
+import { BookOpen, Users, ClipboardList, AlertCircle, Clock, Loader2, TrendingUp, BookmarkCheck } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { 
   BarChart, 
@@ -41,6 +41,8 @@ export default function Dashboard() {
       return false
     }) || []
 
+    const issuedBooksCount = loans?.filter(l => l.status !== 'Returned').length || 0;
+
     return [
       { 
         title: "Total Books", 
@@ -50,11 +52,11 @@ export default function Dashboard() {
         loading: booksLoading
       },
       { 
-        title: "Active Members", 
-        value: members?.filter(m => m.status === 'Active').length || 0, 
-        icon: Users, 
-        color: "text-green-600",
-        loading: membersLoading
+        title: "Issued Books", 
+        value: issuedBooksCount, 
+        icon: BookmarkCheck, 
+        color: "text-accent",
+        loading: loansLoading
       },
       { 
         title: "Overdue Items", 
@@ -62,6 +64,13 @@ export default function Dashboard() {
         icon: AlertCircle, 
         color: "text-destructive",
         loading: loansLoading
+      },
+      { 
+        title: "Active Members", 
+        value: members?.filter(m => m.status === 'Active').length || 0, 
+        icon: Users, 
+        color: "text-green-600",
+        loading: membersLoading
       },
     ]
   }, [books, members, loans, booksLoading, membersLoading, loansLoading, today])
@@ -115,7 +124,7 @@ export default function Dashboard() {
       </header>
       
       <main className="flex-1 space-y-6 p-8 overflow-auto">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => (
             <Card key={stat.title} className="overflow-hidden border-none shadow-md">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
