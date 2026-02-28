@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -34,7 +33,7 @@ import { FirestorePermissionError } from "@/firebase/errors"
 
 const formSchema = z.object({
   name: z.string().min(2, "Name is required"),
-  email: z.string().email("Invalid email address"),
+  idNumber: z.string().min(3, "ID Number is required"),
   phone: z.string().min(7, "Valid phone number is required"),
 })
 
@@ -46,7 +45,7 @@ export function RegisterPatronDialog() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      email: "",
+      idNumber: "",
       phone: "",
     },
   })
@@ -108,12 +107,12 @@ export function RegisterPatronDialog() {
             />
             <FormField
               control={form.control}
-              name="email"
+              name="idNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email Address</FormLabel>
+                  <FormLabel>ID Number</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="john@example.com" {...field} />
+                    <Input placeholder="e.g. RIB-001" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

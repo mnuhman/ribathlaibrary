@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -34,7 +33,7 @@ export default function SearchPage() {
       ) || [],
       members: members?.filter(m => 
         (m.name?.toLowerCase() || "").includes(q) || 
-        (m.email?.toLowerCase() || "").includes(q)
+        (m.idNumber?.toLowerCase() || "").includes(q)
       ) || []
     }
   }, [query, books, members])
@@ -55,7 +54,7 @@ export default function SearchPage() {
             <div className="relative group">
               <SearchIcon className="absolute left-4 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
               <Input 
-                placeholder="Search across books, members, ISBNs..." 
+                placeholder="Search across books, members, ISBNs, or IDs..." 
                 className="pl-12 h-14 text-lg bg-card border-none shadow-lg focus-visible:ring-primary/20"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -132,7 +131,7 @@ export default function SearchPage() {
                               </div>
                               <div>
                                 <h3 className="font-semibold">{member.name}</h3>
-                                <p className="text-xs text-muted-foreground">{member.email}</p>
+                                <p className="text-xs text-muted-foreground">ID: {member.idNumber}</p>
                               </div>
                             </div>
                             <Badge variant={member.status === 'Active' ? 'default' : 'destructive'}>
