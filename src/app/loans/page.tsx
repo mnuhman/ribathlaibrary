@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -26,7 +27,7 @@ import {
 } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/hooks/use-toast"
-import { useCollection, useFirestore } from "@/firebase"
+import { useCollection, useDoc, useFirestore } from "@/firebase"
 import { collection, doc, updateDoc, increment } from "firebase/firestore"
 import { errorEmitter } from "@/firebase/error-emitter"
 import { FirestorePermissionError } from "@/firebase/errors"
@@ -39,13 +40,17 @@ function FinesContent() {
   const loansRef = React.useMemo(() => db ? collection(db, "loans") : null, [db])
   const booksRef = React.useMemo(() => db ? collection(db, "books") : null, [db])
   const membersRef = React.useMemo(() => db ? collection(db, "members") : null, [db])
+  const configRef = React.useMemo(() => db ? doc(db, "settings", "config") : null, [db])
   
   const { data: loans, loading: loansLoading } = useCollection(loansRef)
   const { data: books } = useCollection(booksRef)
   const { data: members } = useCollection(membersRef)
+  const { data: config } = useDoc(configRef)
   
   const [searchTerm, setSearchTerm] = React.useState("")
   const [today, setToday] = React.useState<Date | null>(null)
+
+  const fineRate = config?.fineRatePerDay || 0.50
 
   React.useEffect(() => {
     setToday(new Date())
@@ -61,10 +66,10 @@ function FinesContent() {
     if (today > dueDate) {
       const diffTime = today.getTime() - dueDate.getTime()
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-      return diffDays * 0.50 // Standard fine rate
+      return diffDays * fineRate
     }
     return 0
-  }, [today])
+  }, [today, fineRate])
 
   const activeLoans = React.useMemo(() => loans?.filter(l => l.status !== 'Returned') || [], [loans])
   
@@ -88,9 +93,7 @@ function FinesContent() {
       returnDate: new Date().toISOString().split('T')[0] 
     }
     
-    // Update loan status
     updateDoc(docRef, updateData).then(() => {
-      // Return book to inventory
       const bookDocRef = doc(db, "books", bookId)
       const book = books?.find(b => b.id === bookId)
       if (book) {
@@ -242,7 +245,7 @@ function FinesContent() {
                               <span className="text-destructive font-bold">
                                 ₹{Math.max(currentFine, loan.fineAmount).toFixed(2)}
                               </span>
-                              <span className="text-[10px] text-muted-foreground uppercase">Rate: ₹0.50/day</span>
+                              <span className="text-[10px] text-muted-foreground uppercase">Rate: ₹{fineRate.toFixed(2)}/day</span>
                             </div>
                           ) : (
                             <span className="text-muted-foreground">-</span>

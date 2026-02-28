@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -34,7 +35,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/hooks/use-toast';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useDoc, useFirestore } from '@/firebase';
 import { collection, addDoc, doc, updateDoc, increment } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -51,9 +52,11 @@ export function CheckoutBookDialog() {
 
   const booksRef = React.useMemo(() => (db ? collection(db, 'books') : null), [db]);
   const membersRef = React.useMemo(() => (db ? collection(db, 'members') : null), [db]);
+  const configRef = React.useMemo(() => (db ? doc(db, "settings", "config") : null), [db]);
 
   const { data: books, loading: booksLoading } = useCollection(booksRef);
   const { data: members, loading: membersLoading } = useCollection(membersRef);
+  const { data: config } = useDoc(configRef);
 
   const availableBooks = React.useMemo(() => {
     return books?.filter((b) => b.available > 0 && b.status !== 'Unavailable') || [];
@@ -63,14 +66,23 @@ export function CheckoutBookDialog() {
     return members?.filter((m) => m.status === 'Active') || [];
   }, [members]);
 
+  const finePeriod = config?.finePeriodDays || 14;
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       bookId: '',
       memberId: '',
-      dueDate: format(addDays(new Date(), 14), 'yyyy-MM-dd'),
+      dueDate: format(addDays(new Date(), finePeriod), 'yyyy-MM-dd'),
     },
   });
+
+  // Update default due date when config loads
+  React.useEffect(() => {
+    if (config?.finePeriodDays) {
+      form.setValue('dueDate', format(addDays(new Date(), config.finePeriodDays), 'yyyy-MM-dd'));
+    }
+  }, [config, form]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     if (!db) return;
@@ -90,10 +102,8 @@ export function CheckoutBookDialog() {
       status: 'Active',
     };
 
-    // 1. Create the loan record
     addDoc(loansRef, loanData)
       .then(() => {
-        // 2. Decrement available copies of the book
         const bookDocRef = doc(db, 'books', values.bookId);
         const newAvailable = book.available - 1;
         updateDoc(bookDocRef, {

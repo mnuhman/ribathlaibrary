@@ -45,6 +45,18 @@
         "status": { "type": "string", "enum": ["Active", "Returned", "Overdue"] }
       },
       "required": ["bookId", "memberId", "checkoutDate", "dueDate", "fineAmount", "status"]
+    },
+    "LibraryConfig": {
+      "title": "Library Configuration",
+      "description": "Global settings for the library management system",
+      "type": "object",
+      "properties": {
+        "libraryName": { "type": "string" },
+        "contactEmail": { "type": "string" },
+        "finePeriodDays": { "type": "number", "description": "Standard number of days allowed for a loan" },
+        "fineRatePerDay": { "type": "number", "description": "Currency amount charged per day for overdue items" }
+      },
+      "required": ["libraryName", "finePeriodDays", "fineRatePerDay"]
     }
   },
   "auth": {
@@ -62,6 +74,10 @@
     "/loans/{loanId}": {
       "schema": { "$ref": "#/backend/entities/Loan" },
       "description": "Collection of loan records"
+    },
+    "/settings/{settingId}": {
+      "schema": { "$ref": "#/backend/entities/LibraryConfig" },
+      "description": "Collection for library-wide settings and configuration"
     }
   }
 }
