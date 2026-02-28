@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -65,6 +64,10 @@ export default function CatalogPage() {
     setAllBooks(prev => prev.map(b => b.id === updatedBook.id ? updatedBook : b))
   }
 
+  const handleAdd = (newBook: Book) => {
+    setAllBooks(prev => [newBook, ...prev])
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Available': return 'bg-green-100 text-green-700 border-green-200'
@@ -85,7 +88,7 @@ export default function CatalogPage() {
               <div className="h-4 w-px bg-border" />
               <h1 className="font-headline text-2xl font-bold text-primary">Book Catalog</h1>
             </div>
-            <AddBookDialog />
+            <AddBookDialog onAdd={handleAdd} />
           </header>
 
           <main className="flex-1 p-8 space-y-6">

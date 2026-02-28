@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -20,7 +19,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -30,6 +28,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/hooks/use-toast"
 import { generateBookDescription } from "@/ai/flows/generate-book-description-flow"
+import { Book } from "@/lib/mock-data"
 
 const formSchema = z.object({
   title: z.string().min(2, "Title is required"),
@@ -40,7 +39,11 @@ const formSchema = z.object({
   description: z.string().optional(),
 })
 
-export function AddBookDialog() {
+interface AddBookDialogProps {
+  onAdd: (book: Book) => void
+}
+
+export function AddBookDialog({ onAdd }: AddBookDialogProps) {
   const [open, setOpen] = React.useState(false)
   const [isGenerating, setIsGenerating] = React.useState(false)
 
@@ -89,7 +92,20 @@ export function AddBookDialog() {
   }
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
+    const newBook: Book = {
+      id: Math.random().toString(36).substr(2, 9),
+      title: values.title,
+      author: values.author,
+      isbn: values.isbn,
+      genre: values.genre,
+      description: values.description || "",
+      copies: values.copies,
+      available: values.copies,
+      status: 'Available',
+    }
+    
+    onAdd(newBook)
+    
     toast({
       title: "Book Added",
       description: `${values.title} has been added to the catalog.`,
@@ -170,6 +186,19 @@ export function AddBookDialog() {
                 )}
               />
             </div>
+            <FormField
+              control={form.control}
+              name="copies"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Number of Copies</FormLabel>
+                  <FormControl>
+                    <Input type="number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="description"
