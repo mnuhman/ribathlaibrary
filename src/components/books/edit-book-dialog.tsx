@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Sparkles, Loader2, Edit2 } from "lucide-react"
+import { Sparkles, Loader2 } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -29,7 +29,10 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/hooks/use-toast"
 import { generateBookDescription } from "@/ai/flows/generate-book-description-flow"
-import { Book } from "@/lib/mock-data"
+import { useFirestore } from "@/firebase"
+import { doc, updateDoc } from "firebase/firestore"
+import { errorEmitter } from "@/firebase/error-emitter"
+import { FirestorePermissionError } from "@/firebase/errors"
 
 const formSchema = z.object({
   title: z.string().min(2, "Title is required"),
@@ -41,13 +44,13 @@ const formSchema = z.object({
 })
 
 interface EditBookDialogProps {
-  book: Book
-  onUpdate: (updatedBook: Book) => void
+  book: any
 }
 
-export function EditBookDialog({ book, onUpdate }: EditBookDialogProps) {
+export function EditBookDialog({ book }: EditBookDialogProps) {
   const [open, setOpen] = React.useState(false)
   const [isGenerating, setIsGenerating] = React.useState(false)
+  const db = useFirestore()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -94,14 +97,23 @@ export function EditBookDialog({ book, onUpdate }: EditBookDialogProps) {
   }
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const updatedBook: Book = {
-      ...book,
+    if (!db) return
+
+    const docRef = doc(db, "books", book.id)
+    const updateData = {
       ...values,
       description: values.description || "",
-      // Maintain status logic for MVP
       status: values.copies > 0 ? (book.status === 'Unavailable' ? 'Available' : book.status) : 'Unavailable'
     }
-    onUpdate(updatedBook)
+
+    updateDoc(docRef, updateData).catch(async (e) => {
+      errorEmitter.emit("permission-error", new FirestorePermissionError({
+        path: docRef.path,
+        operation: "update",
+        requestResourceData: updateData
+      }))
+    })
+
     toast({
       title: "Book Updated",
       description: `${values.title} details have been updated.`,

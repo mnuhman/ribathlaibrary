@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -28,7 +29,10 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/hooks/use-toast"
 import { generateBookDescription } from "@/ai/flows/generate-book-description-flow"
-import { Book } from "@/lib/mock-data"
+import { useFirestore } from "@/firebase"
+import { collection, addDoc } from "firebase/firestore"
+import { errorEmitter } from "@/firebase/error-emitter"
+import { FirestorePermissionError } from "@/firebase/errors"
 
 const formSchema = z.object({
   title: z.string().min(2, "Title is required"),
@@ -39,13 +43,10 @@ const formSchema = z.object({
   description: z.string().optional(),
 })
 
-interface AddBookDialogProps {
-  onAdd: (book: Book) => void
-}
-
-export function AddBookDialog({ onAdd }: AddBookDialogProps) {
+export function AddBookDialog() {
   const [open, setOpen] = React.useState(false)
   const [isGenerating, setIsGenerating] = React.useState(false)
+  const db = useFirestore()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -92,19 +93,23 @@ export function AddBookDialog({ onAdd }: AddBookDialogProps) {
   }
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const newBook: Book = {
-      id: Math.random().toString(36).substr(2, 9),
-      title: values.title,
-      author: values.author,
-      isbn: values.isbn,
-      genre: values.genre,
-      description: values.description || "",
-      copies: values.copies,
+    if (!db) return
+
+    const booksRef = collection(db, "books")
+    const bookData = {
+      ...values,
       available: values.copies,
       status: 'Available',
+      description: values.description || ""
     }
-    
-    onAdd(newBook)
+
+    addDoc(booksRef, bookData).catch(async (e) => {
+      errorEmitter.emit("permission-error", new FirestorePermissionError({
+        path: booksRef.path,
+        operation: "create",
+        requestResourceData: bookData
+      }))
+    })
     
     toast({
       title: "Book Added",

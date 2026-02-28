@@ -1,0 +1,66 @@
+
+{
+  "entities": {
+    "Book": {
+      "title": "Book",
+      "description": "A book in the library catalog",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "author": { "type": "string" },
+        "isbn": { "type": "string" },
+        "genre": { "type": "string" },
+        "description": { "type": "string" },
+        "copies": { "type": "number" },
+        "available": { "type": "number" },
+        "status": { "type": "string", "enum": ["Available", "Low Stock", "Unavailable"] }
+      },
+      "required": ["title", "author", "isbn", "genre", "copies", "available", "status"]
+    },
+    "Member": {
+      "title": "Member",
+      "description": "A registered library member",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "joinedDate": { "type": "string", "format": "date" },
+        "status": { "type": "string", "enum": ["Active", "Suspended"] }
+      },
+      "required": ["name", "email", "phone", "joinedDate", "status"]
+    },
+    "Loan": {
+      "title": "Loan",
+      "description": "A record of a book borrowed by a member",
+      "type": "object",
+      "properties": {
+        "bookId": { "type": "string" },
+        "memberId": { "type": "string" },
+        "checkoutDate": { "type": "string", "format": "date" },
+        "dueDate": { "type": "string", "format": "date" },
+        "returnDate": { "type": "string", "format": "date" },
+        "fineAmount": { "type": "number" },
+        "status": { "type": "string", "enum": ["Active", "Returned", "Overdue"] }
+      },
+      "required": ["bookId", "memberId", "checkoutDate", "dueDate", "fineAmount", "status"]
+    }
+  },
+  "auth": {
+    "providers": ["google.com"]
+  },
+  "firestore": {
+    "/books/{bookId}": {
+      "schema": { "$ref": "#/backend/entities/Book" },
+      "description": "Collection of books in the library"
+    },
+    "/members/{memberId}": {
+      "schema": { "$ref": "#/backend/entities/Member" },
+      "description": "Collection of library members"
+    },
+    "/loans/{loanId}": {
+      "schema": { "$ref": "#/backend/entities/Loan" },
+      "description": "Collection of loan records"
+    }
+  }
+}

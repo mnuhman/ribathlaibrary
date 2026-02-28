@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -26,7 +27,10 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/hooks/use-toast"
-import { Patron } from "@/lib/mock-data"
+import { useFirestore } from "@/firebase"
+import { collection, addDoc } from "firebase/firestore"
+import { errorEmitter } from "@/firebase/error-emitter"
+import { FirestorePermissionError } from "@/firebase/errors"
 
 const formSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -34,12 +38,9 @@ const formSchema = z.object({
   phone: z.string().min(7, "Valid phone number is required"),
 })
 
-interface RegisterPatronDialogProps {
-  onRegister: (patron: Patron) => void
-}
-
-export function RegisterPatronDialog({ onRegister }: RegisterPatronDialogProps) {
+export function RegisterPatronDialog() {
   const [open, setOpen] = React.useState(false)
+  const db = useFirestore()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,13 +52,23 @@ export function RegisterPatronDialog({ onRegister }: RegisterPatronDialogProps) 
   })
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const newPatron: Patron = {
-      id: Math.random().toString(36).substr(2, 9),
+    if (!db) return
+
+    const membersRef = collection(db, "members")
+    const memberData = {
       ...values,
       joinedDate: new Date().toISOString().split('T')[0],
       status: 'Active',
     }
-    onRegister(newPatron)
+
+    addDoc(membersRef, memberData).catch(async (e) => {
+      errorEmitter.emit("permission-error", new FirestorePermissionError({
+        path: membersRef.path,
+        operation: "create",
+        requestResourceData: memberData
+      }))
+    })
+
     toast({
       title: "Member Registered",
       description: `${values.name} has been successfully registered.`,

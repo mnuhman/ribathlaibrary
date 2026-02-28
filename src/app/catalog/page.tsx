@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -12,13 +13,12 @@ import {
   Filter, 
   MoreHorizontal, 
   Book as BookIcon,
-  Trash2
+  Trash2,
+  Loader2
 } from "lucide-react"
-import { BOOKS, Book } from "@/lib/mock-data"
 import { AddBookDialog } from "@/components/books/add-book-dialog"
 import { EditBookDialog } from "@/components/books/edit-book-dialog"
-import { toast } from "@/hooks/use-toast"
-import {
+import { 
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -34,38 +34,37 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { useCollection, useFirestore } from "@/firebase"
+import { collection, deleteDoc, doc } from "firebase/firestore"
+import { errorEmitter } from "@/firebase/error-emitter"
+import { FirestorePermissionError } from "@/firebase/errors"
 
 export default function CatalogPage() {
-  const [allBooks, setAllBooks] = React.useState<Book[]>(BOOKS)
+  const db = useFirestore()
+  const booksRef = React.useMemo(() => db ? collection(db, "books") : null, [db])
+  const { data: books, loading } = useCollection(booksRef)
+  
   const [searchTerm, setSearchTerm] = React.useState("")
-  const [filteredBooks, setFilteredBooks] = React.useState<Book[]>(allBooks)
 
-  React.useEffect(() => {
-    const results = allBooks.filter(book => 
+  const filteredBooks = React.useMemo(() => {
+    if (!books) return []
+    return books.filter(book => 
       book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
       book.isbn.includes(searchTerm) ||
       book.genre.toLowerCase().includes(searchTerm.toLowerCase())
     )
-    setFilteredBooks(results)
-  }, [searchTerm, allBooks])
+  }, [searchTerm, books])
 
   const handleDelete = (id: string) => {
-    const bookToDelete = allBooks.find(b => b.id === id)
-    setAllBooks(prev => prev.filter(b => b.id !== id))
-    toast({
-      title: "Book Deleted",
-      description: `${bookToDelete?.title} has been removed from the catalog.`,
-      variant: "destructive",
+    if (!db) return
+    const docRef = doc(db, "books", id)
+    deleteDoc(docRef).catch(async (e) => {
+      errorEmitter.emit("permission-error", new FirestorePermissionError({
+        path: docRef.path,
+        operation: "delete"
+      }))
     })
-  }
-
-  const handleUpdate = (updatedBook: Book) => {
-    setAllBooks(prev => prev.map(b => b.id === updatedBook.id ? updatedBook : b))
-  }
-
-  const handleAdd = (newBook: Book) => {
-    setAllBooks(prev => [newBook, ...prev])
   }
 
   const getStatusColor = (status: string) => {
@@ -88,7 +87,7 @@ export default function CatalogPage() {
               <div className="h-4 w-px bg-border" />
               <h1 className="font-headline text-2xl font-bold text-primary">Book Catalog</h1>
             </div>
-            <AddBookDialog onAdd={handleAdd} />
+            <AddBookDialog />
           </header>
 
           <main className="flex-1 p-8 space-y-6">
@@ -120,7 +119,14 @@ export default function CatalogPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredBooks.length > 0 ? (
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-64 text-center">
+                          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+                          <p className="mt-2 text-muted-foreground">Loading catalog...</p>
+                        </TableCell>
+                      </TableRow>
+                    ) : filteredBooks.length > 0 ? (
                       filteredBooks.map((book) => (
                         <TableRow key={book.id} className="group hover:bg-muted/30 transition-colors">
                           <TableCell>
@@ -157,7 +163,7 @@ export default function CatalogPage() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="w-48">
                                 <DropdownMenuLabel>Manage Book</DropdownMenuLabel>
-                                <EditBookDialog book={book} onUpdate={handleUpdate} />
+                                <EditBookDialog book={book} />
                                 <DropdownMenuItem>View History</DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem 

@@ -14,9 +14,9 @@ import {
   AlertTriangle,
   History,
   Coins,
-  CheckCircle2
+  CheckCircle2,
+  Loader2
 } from "lucide-react"
-import { LOANS, BOOKS, PATRONS, Loan } from "@/lib/mock-data"
 import {
   Table,
   TableBody,
@@ -27,13 +27,25 @@ import {
 } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/hooks/use-toast"
+import { useCollection, useFirestore } from "@/firebase"
+import { collection, doc, updateDoc } from "firebase/firestore"
+import { errorEmitter } from "@/firebase/error-emitter"
+import { FirestorePermissionError } from "@/firebase/errors"
 
 export default function LoansPage() {
+  const db = useFirestore()
+  
+  const loansRef = React.useMemo(() => db ? collection(db, "loans") : null, [db])
+  const booksRef = React.useMemo(() => db ? collection(db, "books") : null, [db])
+  const membersRef = React.useMemo(() => db ? collection(db, "members") : null, [db])
+  
+  const { data: loans, loading: loansLoading } = useCollection(loansRef)
+  const { data: books } = useCollection(booksRef)
+  const { data: members } = useCollection(membersRef)
+  
   const [searchTerm, setSearchTerm] = React.useState("")
-  const [loans, setLoans] = React.useState<Loan[]>(LOANS)
   const [today, setToday] = React.useState<Date | null>(null)
 
-  // Avoid hydration mismatch by setting date on mount
   React.useEffect(() => {
     setToday(new Date())
   }, [])
@@ -44,25 +56,39 @@ export default function LoansPage() {
     if (today > dueDate) {
       const diffTime = today.getTime() - dueDate.getTime()
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-      return diffDays * 0.50 // $0.50 per day
+      return diffDays * 0.50
     }
     return 0
   }, [today])
 
-  const activeLoans = loans.filter(l => l.status !== 'Returned')
-  const overdueLoans = activeLoans.filter(l => {
-    if (!today) return false
-    return new Date(l.dueDate) < today
-  })
+  const activeLoans = React.useMemo(() => loans?.filter(l => l.status !== 'Returned') || [], [loans])
+  
+  const overdueLoans = React.useMemo(() => {
+    if (!today || !activeLoans) return []
+    return activeLoans.filter(l => new Date(l.dueDate) < today)
+  }, [activeLoans, today])
 
-  const totalFines = activeLoans.reduce((sum, loan) => {
-    return sum + (loan.status === 'Overdue' ? loan.fineAmount : calculateFine(loan.dueDate))
-  }, 0)
+  const totalFines = React.useMemo(() => {
+    return activeLoans.reduce((sum, loan) => {
+      const fine = loan.status === 'Overdue' ? loan.fineAmount : calculateFine(loan.dueDate)
+      return sum + fine
+    }, 0)
+  }, [activeLoans, calculateFine])
 
   const handleReturn = (loanId: string) => {
-    setLoans(prev => prev.map(l => 
-      l.id === loanId ? { ...l, status: 'Returned', returnDate: new Date().toISOString().split('T')[0] } : l
-    ))
+    if (!db) return
+    const docRef = doc(db, "loans", loanId)
+    const updateData = { 
+      status: 'Returned', 
+      returnDate: new Date().toISOString().split('T')[0] 
+    }
+    updateDoc(docRef, updateData).catch(async (e) => {
+      errorEmitter.emit("permission-error", new FirestorePermissionError({
+        path: docRef.path,
+        operation: "update",
+        requestResourceData: updateData
+      }))
+    })
     toast({
       title: "Book Returned",
       description: "The book has been successfully marked as returned.",
@@ -70,21 +96,31 @@ export default function LoansPage() {
   }
 
   const handleSettleFine = (loanId: string) => {
-    setLoans(prev => prev.map(l => 
-      l.id === loanId ? { ...l, fineAmount: 0 } : l
-    ))
+    if (!db) return
+    const docRef = doc(db, "loans", loanId)
+    const updateData = { fineAmount: 0 }
+    updateDoc(docRef, updateData).catch(async (e) => {
+      errorEmitter.emit("permission-error", new FirestorePermissionError({
+        path: docRef.path,
+        operation: "update",
+        requestResourceData: updateData
+      }))
+    })
     toast({
       title: "Fine Settled",
       description: "The outstanding fine has been cleared.",
     })
   }
 
-  const filteredLoans = loans.filter(loan => {
-    const book = BOOKS.find(b => b.id === loan.bookId)
-    const patron = PATRONS.find(p => p.id === loan.patronId)
-    const searchString = `${book?.title} ${patron?.name} ${loan.status}`.toLowerCase()
-    return searchString.includes(searchTerm.toLowerCase())
-  })
+  const filteredLoans = React.useMemo(() => {
+    if (!loans) return []
+    return loans.filter(loan => {
+      const book = books?.find(b => b.id === loan.bookId)
+      const member = members?.find(m => m.id === loan.memberId)
+      const searchString = `${book?.title || ''} ${member?.name || ''} ${loan.status}`.toLowerCase()
+      return searchString.includes(searchTerm.toLowerCase())
+    })
+  }, [loans, books, members, searchTerm])
 
   return (
     <SidebarProvider>
@@ -139,7 +175,7 @@ export default function LoansPage() {
               <div className="relative w-full max-w-sm">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input 
-                  placeholder="Search loans by book, patron, or status..." 
+                  placeholder="Search loans by book, member, or status..." 
                   className="pl-10 bg-card border-none shadow-sm"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -153,7 +189,7 @@ export default function LoansPage() {
                   <TableHeader className="bg-muted/50">
                     <TableRow>
                       <TableHead>Book</TableHead>
-                      <TableHead>Patron</TableHead>
+                      <TableHead>Member</TableHead>
                       <TableHead>Checkout Date</TableHead>
                       <TableHead>Due Date</TableHead>
                       <TableHead>Calculated Fine</TableHead>
@@ -162,67 +198,81 @@ export default function LoansPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredLoans.map((loan) => {
-                      const book = BOOKS.find(b => b.id === loan.bookId)
-                      const patron = PATRONS.find(p => p.id === loan.patronId)
-                      const currentFine = loan.status === 'Returned' ? 0 : calculateFine(loan.dueDate)
-                      const isOverdue = today ? new Date(loan.dueDate) < today && loan.status !== 'Returned' : false
+                    {loansLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="h-64 text-center">
+                          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+                        </TableCell>
+                      </TableRow>
+                    ) : filteredLoans.length > 0 ? (
+                      filteredLoans.map((loan) => {
+                        const book = books?.find(b => b.id === loan.bookId)
+                        const member = members?.find(m => m.id === loan.memberId)
+                        const currentFine = loan.status === 'Returned' ? 0 : calculateFine(loan.dueDate)
+                        const isOverdue = today ? new Date(loan.dueDate) < today && loan.status !== 'Returned' : false
 
-                      return (
-                        <TableRow key={loan.id} className="hover:bg-muted/30 transition-colors">
-                          <TableCell className="font-semibold">{book?.title}</TableCell>
-                          <TableCell>{patron?.name}</TableCell>
-                          <TableCell>{loan.checkoutDate}</TableCell>
-                          <TableCell className={isOverdue ? 'text-destructive font-semibold' : ''}>
-                            {loan.dueDate}
-                          </TableCell>
-                          <TableCell>
-                            {(currentFine > 0 || loan.fineAmount > 0) ? (
-                              <div className="flex flex-col">
-                                <span className="text-destructive font-bold">
-                                  ${Math.max(currentFine, loan.fineAmount).toFixed(2)}
-                                </span>
-                                <span className="text-[10px] text-muted-foreground uppercase">Rate: $0.50/day</span>
+                        return (
+                          <TableRow key={loan.id} className="hover:bg-muted/30 transition-colors">
+                            <TableCell className="font-semibold">{book?.title || 'Unknown Book'}</TableCell>
+                            <TableCell>{member?.name || 'Unknown Member'}</TableCell>
+                            <TableCell>{loan.checkoutDate}</TableCell>
+                            <TableCell className={isOverdue ? 'text-destructive font-semibold' : ''}>
+                              {loan.dueDate}
+                            </TableCell>
+                            <TableCell>
+                              {(currentFine > 0 || loan.fineAmount > 0) ? (
+                                <div className="flex flex-col">
+                                  <span className="text-destructive font-bold">
+                                    ${Math.max(currentFine, loan.fineAmount).toFixed(2)}
+                                  </span>
+                                  <span className="text-[10px] text-muted-foreground uppercase">Rate: $0.50/day</span>
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant={isOverdue ? 'destructive' : 'default'} 
+                                className={loan.status === 'Active' && !isOverdue ? 'bg-primary' : loan.status === 'Returned' ? 'bg-green-500 hover:bg-green-600' : ''}
+                              >
+                                {isOverdue ? 'Overdue' : loan.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                {loan.status !== 'Returned' && (
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="h-8 gap-1"
+                                    onClick={() => handleReturn(loan.id)}
+                                  >
+                                    <RotateCcw className="h-3 w-3" /> Return
+                                  </Button>
+                                )}
+                                {(loan.fineAmount > 0 || currentFine > 0) && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-8 gap-1 text-accent hover:text-accent hover:bg-accent/10"
+                                    onClick={() => handleSettleFine(loan.id)}
+                                  >
+                                    <CheckCircle2 className="h-3 w-3" /> Settle Fine
+                                  </Button>
+                                )}
                               </div>
-                            ) : (
-                              <span className="text-muted-foreground">-</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant={isOverdue ? 'destructive' : 'default'} 
-                              className={loan.status === 'Active' && !isOverdue ? 'bg-primary' : loan.status === 'Returned' ? 'bg-green-500 hover:bg-green-600' : ''}
-                            >
-                              {isOverdue ? 'Overdue' : loan.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-2">
-                              {loan.status !== 'Returned' && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="h-8 gap-1"
-                                  onClick={() => handleReturn(loan.id)}
-                                >
-                                  <RotateCcw className="h-3 w-3" /> Return
-                                </Button>
-                              )}
-                              {(loan.fineAmount > 0 || currentFine > 0) && (
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="h-8 gap-1 text-accent hover:text-accent hover:bg-accent/10"
-                                  onClick={() => handleSettleFine(loan.id)}
-                                >
-                                  <CheckCircle2 className="h-3 w-3" /> Settle Fine
-                                </Button>
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })}
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                          No loan records found.
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
