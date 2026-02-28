@@ -13,10 +13,12 @@ import {
   Filter, 
   MoreHorizontal, 
   Book as BookIcon,
-  ChevronRight
+  Trash2
 } from "lucide-react"
 import { BOOKS, Book } from "@/lib/mock-data"
 import { AddBookDialog } from "@/components/books/add-book-dialog"
+import { EditBookDialog } from "@/components/books/edit-book-dialog"
+import { toast } from "@/hooks/use-toast"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,18 +37,33 @@ import {
 } from "@/components/ui/table"
 
 export default function CatalogPage() {
+  const [allBooks, setAllBooks] = React.useState<Book[]>(BOOKS)
   const [searchTerm, setSearchTerm] = React.useState("")
-  const [filteredBooks, setFilteredBooks] = React.useState<Book[]>(BOOKS)
+  const [filteredBooks, setFilteredBooks] = React.useState<Book[]>(allBooks)
 
   React.useEffect(() => {
-    const results = BOOKS.filter(book => 
+    const results = allBooks.filter(book => 
       book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
       book.isbn.includes(searchTerm) ||
       book.genre.toLowerCase().includes(searchTerm.toLowerCase())
     )
     setFilteredBooks(results)
-  }, [searchTerm])
+  }, [searchTerm, allBooks])
+
+  const handleDelete = (id: string) => {
+    const bookToDelete = allBooks.find(b => b.id === id)
+    setAllBooks(prev => prev.filter(b => b.id !== id))
+    toast({
+      title: "Book Deleted",
+      description: `${bookToDelete?.title} has been removed from the catalog.`,
+      variant: "destructive",
+    })
+  }
+
+  const handleUpdate = (updatedBook: Book) => {
+    setAllBooks(prev => prev.map(b => b.id === updatedBook.id ? updatedBook : b))
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -137,10 +154,15 @@ export default function CatalogPage() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="w-48">
                                 <DropdownMenuLabel>Manage Book</DropdownMenuLabel>
-                                <DropdownMenuItem>Edit Details</DropdownMenuItem>
+                                <EditBookDialog book={book} onUpdate={handleUpdate} />
                                 <DropdownMenuItem>View History</DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-destructive">Delete Entry</DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  className="text-destructive flex items-center gap-2"
+                                  onClick={() => handleDelete(book.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" /> Delete Entry
+                                </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
