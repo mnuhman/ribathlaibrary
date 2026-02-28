@@ -34,7 +34,6 @@ export default function Dashboard() {
   }, [])
 
   const stats = React.useMemo(() => {
-    const activeLoans = loans?.filter(l => l.status === 'Active') || []
     const overdueLoans = loans?.filter(l => {
       if (l.status === 'Returned') return false
       if (l.status === 'Overdue') return true
@@ -56,13 +55,6 @@ export default function Dashboard() {
         icon: Users, 
         color: "text-green-600",
         loading: membersLoading
-      },
-      { 
-        title: "Issued Books", 
-        value: activeLoans.length, 
-        icon: ClipboardList, 
-        color: "text-primary",
-        loading: loansLoading
       },
       { 
         title: "Overdue Items", 
@@ -123,7 +115,7 @@ export default function Dashboard() {
       </header>
       
       <main className="flex-1 space-y-6 p-8 overflow-auto">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {stats.map((stat) => (
             <Card key={stat.title} className="overflow-hidden border-none shadow-md">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

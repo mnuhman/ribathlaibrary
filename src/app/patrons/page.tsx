@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, Hash, Users, MoreVertical, Trash2, Loader2 } from "lucide-react"
+import { Search, Hash, Users, MoreVertical, Trash2, Loader2, ExternalLink } from "lucide-react"
 import { RegisterPatronDialog } from "@/components/patrons/register-patron-dialog"
 import { toast } from "@/hooks/use-toast"
 import {
@@ -27,10 +27,8 @@ import { FirestorePermissionError } from "@/firebase/errors"
 export default function MembersPage() {
   const db = useFirestore()
   const membersRef = React.useMemo(() => db ? collection(db, "members") : null, [db])
-  const loansRef = React.useMemo(() => db ? collection(db, "loans") : null, [db])
   
   const { data: members, loading: membersLoading } = useCollection(membersRef)
-  const { data: loans } = useCollection(loansRef)
   
   const [searchTerm, setSearchTerm] = React.useState("")
 
@@ -57,11 +55,6 @@ export default function MembersPage() {
       description: `${name} has been removed from the registry.`,
       variant: "destructive",
     })
-  }
-
-  const getActiveLoanCount = (memberId: string) => {
-    if (!loans) return 0
-    return loans.filter(l => l.memberId === memberId && l.status !== 'Returned').length
   }
 
   return (
@@ -148,14 +141,10 @@ export default function MembersPage() {
                     </div>
                   </div>
                   
-                  <div className="pt-4 border-t border-border flex items-center justify-between">
-                    <div className="flex flex-col">
-                      <span className="text-xs font-semibold text-muted-foreground uppercase">Issued Books</span>
-                      <span className="text-lg font-bold text-primary">{getActiveLoanCount(member.id)}</span>
-                    </div>
-                    <Button variant="ghost" size="sm" className="text-accent hover:text-accent/80 font-semibold h-8 px-2" asChild>
+                  <div className="pt-4 border-t border-border flex items-center justify-end">
+                    <Button variant="ghost" size="sm" className="text-accent hover:text-accent/80 font-semibold h-8 px-2 gap-1" asChild>
                       <Link href={`/loans?search=${encodeURIComponent(member.name)}`}>
-                        View Details
+                        View Details <ExternalLink className="h-3 w-3" />
                       </Link>
                     </Button>
                   </div>

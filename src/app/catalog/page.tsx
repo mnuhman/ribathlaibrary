@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -66,15 +65,6 @@ export default function CatalogPage() {
     })
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Available': return 'bg-green-100 text-green-700 border-green-200'
-      case 'Low Stock': return 'bg-amber-100 text-amber-700 border-amber-200'
-      case 'Unavailable': return 'bg-red-100 text-red-700 border-red-200'
-      default: return 'bg-gray-100 text-gray-700 border-gray-200'
-    }
-  }
-
   return (
     <>
       <header className="flex h-16 items-center justify-between border-b bg-card px-6 shrink-0">
@@ -107,18 +97,17 @@ export default function CatalogPage() {
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow>
-                  <TableHead className="w-[30%]">Book Details</TableHead>
+                  <TableHead className="w-[40%]">Book Details</TableHead>
                   <TableHead>Genre</TableHead>
                   <TableHead>Price</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Copies</TableHead>
+                  <TableHead>Availability</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-64 text-center">
+                    <TableCell colSpan={5} className="h-64 text-center">
                       <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
                       <p className="mt-2 text-muted-foreground">Loading catalog...</p>
                     </TableCell>
@@ -146,13 +135,13 @@ export default function CatalogPage() {
                         <span className="font-semibold text-primary">₹{book.price ? book.price.toFixed(2) : '0.00'}</span>
                       </TableCell>
                       <TableCell>
-                        <Badge className={getStatusColor(book.status)}>
-                          {book.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-medium">{book.available}</span>
-                        <span className="text-muted-foreground"> / {book.copies}</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-medium">{book.available}</span>
+                          <span className="text-muted-foreground">/ {book.copies}</span>
+                          {book.available === 0 && (
+                            <Badge variant="destructive" className="ml-2 h-5 text-[10px] px-1.5">OUT</Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
@@ -179,7 +168,7 @@ export default function CatalogPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-64 text-center">
+                    <TableCell colSpan={5} className="h-64 text-center">
                       <div className="flex flex-col items-center justify-center space-y-2">
                         <Search className="h-8 w-8 text-muted-foreground" />
                         <p className="text-lg font-medium">No books found</p>
