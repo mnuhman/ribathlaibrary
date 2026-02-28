@@ -12,7 +12,8 @@ import {
   MoreHorizontal, 
   Book as BookIcon,
   Trash2,
-  Loader2
+  Loader2,
+  X
 } from "lucide-react"
 import { AddBookDialog } from "@/components/books/add-book-dialog"
 import { EditBookDialog } from "@/components/books/edit-book-dialog"
@@ -32,6 +33,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { useCollection, useFirestore } from "@/firebase"
 import { collection, deleteDoc, doc } from "firebase/firestore"
 import { errorEmitter } from "@/firebase/error-emitter"
@@ -43,16 +51,28 @@ export default function CatalogPage() {
   const { data: books, loading } = useCollection(booksRef)
   
   const [searchTerm, setSearchTerm] = React.useState("")
+  const [selectedGenre, setSelectedGenre] = React.useState<string>("all")
+
+  const genres = React.useMemo(() => {
+    if (!books) return []
+    const uniqueGenres = Array.from(new Set(books.map(book => book.genre))).filter(Boolean)
+    return uniqueGenres.sort()
+  }, [books])
 
   const filteredBooks = React.useMemo(() => {
     if (!books) return []
-    return books.filter(book => 
-      book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.isbn.includes(searchTerm) ||
-      book.genre.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  }, [searchTerm, books])
+    return books.filter(book => {
+      const matchesSearch = 
+        book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        book.isbn.includes(searchTerm) ||
+        book.genre.toLowerCase().includes(searchTerm.toLowerCase())
+      
+      const matchesGenre = selectedGenre === "all" || book.genre === selectedGenre
+      
+      return matchesSearch && matchesGenre
+    })
+  }, [searchTerm, selectedGenre, books])
 
   const handleDelete = (id: string) => {
     if (!db) return
@@ -87,9 +107,31 @@ export default function CatalogPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="outline" className="gap-2 border-none shadow-sm bg-card">
-            <Filter className="h-4 w-4" /> Filter Genre
-          </Button>
+          
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Select value={selectedGenre} onValueChange={setSelectedGenre}>
+              <SelectTrigger className="w-full sm:w-[180px] border-none shadow-sm bg-card gap-2">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <SelectValue placeholder="Filter Genre" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Genres</SelectItem>
+                {genres.map(genre => (
+                  <SelectItem key={genre} value={genre}>{genre}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {selectedGenre !== "all" && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-10 w-10 text-muted-foreground"
+                onClick={() => setSelectedGenre("all")}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
 
         <Card className="border-none shadow-md overflow-hidden">
@@ -172,7 +214,7 @@ export default function CatalogPage() {
                       <div className="flex flex-col items-center justify-center space-y-2">
                         <Search className="h-8 w-8 text-muted-foreground" />
                         <p className="text-lg font-medium">No books found</p>
-                        <p className="text-sm text-muted-foreground">Try adjusting your search terms.</p>
+                        <p className="text-sm text-muted-foreground">Try adjusting your search or genre filter.</p>
                       </div>
                     </TableCell>
                   </TableRow>
