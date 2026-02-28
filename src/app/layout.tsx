@@ -1,9 +1,10 @@
-
 import type {Metadata} from 'next';
 import './globals.css';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/layout/sidebar';
 
 export const metadata: Metadata = {
   title: 'RIBATH LIBRARY - Modern Library Management',
@@ -40,7 +41,14 @@ export default function RootLayout({
       </head>
       <body className={cn("font-body min-h-screen bg-background text-foreground font-light")}>
         <FirebaseClientProvider>
-          {children}
+          <SidebarProvider>
+            <div className="flex min-h-screen w-full">
+              <AppSidebar />
+              <SidebarInset className="flex flex-col flex-1 overflow-hidden">
+                {children}
+              </SidebarInset>
+            </div>
+          </SidebarProvider>
           <Toaster />
         </FirebaseClientProvider>
       </body>
