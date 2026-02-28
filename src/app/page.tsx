@@ -58,7 +58,7 @@ export default function Dashboard() {
         loading: membersLoading
       },
       { 
-        title: "Active Fines", 
+        title: "Issued Books", 
         value: activeLoans.length, 
         icon: ClipboardList, 
         color: "text-primary",

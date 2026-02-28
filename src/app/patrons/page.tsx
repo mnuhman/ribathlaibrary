@@ -150,7 +150,7 @@ export default function MembersPage() {
                   
                   <div className="pt-4 border-t border-border flex items-center justify-between">
                     <div className="flex flex-col">
-                      <span className="text-xs font-semibold text-muted-foreground uppercase">Active Fines</span>
+                      <span className="text-xs font-semibold text-muted-foreground uppercase">Issued Books</span>
                       <span className="text-lg font-bold text-primary">{getActiveLoanCount(member.id)}</span>
                     </div>
                     <Button variant="ghost" size="sm" className="text-accent hover:text-accent/80 font-semibold h-8 px-2" asChild>
