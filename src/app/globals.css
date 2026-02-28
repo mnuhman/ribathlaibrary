@@ -5,6 +5,45 @@
 
 @layer base {
   :root {
+    /* Light Theme - Clean & Professional */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    
+    --primary: 217 91% 60%; /* Deep Ocean Blue */
+    --primary-foreground: 210 40% 98%;
+    
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    
+    --accent: 35 80% 60%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 217 91% 60%;
+    
+    --radius: 0.75rem;
+
+    --chart-1: 217 91% 60%;
+    --chart-2: 35 80% 60%;
+    --chart-3: 199 89% 48%;
+    --chart-4: 262 83% 58%;
+    --chart-5: 316 70% 50%;
+  }
+
+  .dark {
     /* Deep Ocean Darkness Theme */
     --background: 222 47% 4%;
     --foreground: 210 40% 98%;
@@ -15,7 +54,7 @@
     --popover: 222 47% 5%;
     --popover-foreground: 210 40% 98%;
     
-    --primary: 217 91% 60%; /* Sophisticated Dark Blue */
+    --primary: 217 91% 60%;
     --primary-foreground: 222 47% 4%;
     
     --secondary: 222 47% 12%;
@@ -33,14 +72,6 @@
     --border: 222 47% 15%;
     --input: 222 47% 15%;
     --ring: 217 91% 60%;
-    
-    --radius: 0.75rem;
-
-    --chart-1: 217 91% 60%;
-    --chart-2: 35 80% 60%;
-    --chart-3: 199 89% 48%;
-    --chart-4: 262 83% 58%;
-    --chart-5: 316 70% 50%;
   }
 }
 

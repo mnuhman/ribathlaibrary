@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -8,10 +9,29 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { Switch } from "@/components/ui/switch"
 import { toast } from "@/hooks/use-toast"
-import { Library, Moon, Palette, ShieldCheck, Globe } from "lucide-react"
+import { Library, Moon, Sun, Palette, ShieldCheck } from "lucide-react"
 
 export default function SettingsPage() {
+  const [isDarkMode, setIsDarkMode] = React.useState(true)
+
+  React.useEffect(() => {
+    const theme = localStorage.getItem('theme') || 'dark'
+    setIsDarkMode(theme === 'dark')
+  }, [])
+
+  const toggleTheme = (checked: boolean) => {
+    const newTheme = checked ? 'dark' : 'light'
+    setIsDarkMode(checked)
+    localStorage.setItem('theme', newTheme)
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }
+
   const handleSave = () => {
     toast({
       title: "Settings Saved",
@@ -21,7 +41,7 @@ export default function SettingsPage() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen bg-background w-full">
+      <div className="flex min-h-screen bg-background w-full transition-colors duration-300">
         <AppSidebar />
         <SidebarInset className="flex flex-col">
           <header className="flex h-16 items-center gap-4 border-b bg-card px-6">
@@ -58,20 +78,29 @@ export default function SettingsPage() {
                   <h2 className="text-lg font-semibold">Theme & Appearance</h2>
                 </div>
                 <Card className="border-none shadow-md">
-                  <CardContent className="pt-6 space-y-4">
+                  <CardContent className="pt-6 space-y-6">
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label>Deep Ocean Darkness</Label>
-                        <p className="text-sm text-muted-foreground">The current active visual style.</p>
+                        <Label className="text-base">Visual Theme</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Switch between Deep Ocean Darkness and Classic Light mode.
+                        </p>
                       </div>
-                      <div className="flex h-8 w-8 rounded-full bg-primary" />
+                      <div className="flex items-center gap-3">
+                        <Sun className={`h-4 w-4 ${!isDarkMode ? 'text-primary' : 'text-muted-foreground'}`} />
+                        <Switch 
+                          checked={isDarkMode}
+                          onCheckedChange={toggleTheme}
+                        />
+                        <Moon className={`h-4 w-4 ${isDarkMode ? 'text-primary' : 'text-muted-foreground'}`} />
+                      </div>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label>Roboto Light Typography</Label>
-                        <p className="text-sm text-muted-foreground">Elegant thin-weight font enabled.</p>
+                        <Label>Roboto Typography</Label>
+                        <p className="text-sm text-muted-foreground">Elegant light-weight font enabled.</p>
                       </div>
-                      <span className="text-xs font-light px-2 py-1 bg-secondary rounded text-primary">Active</span>
+                      <span className="text-xs font-light px-2 py-1 bg-secondary rounded text-primary border border-primary/20">Active</span>
                     </div>
                   </CardContent>
                 </Card>
