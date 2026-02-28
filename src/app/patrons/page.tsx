@@ -2,6 +2,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/layout/sidebar"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -119,8 +120,9 @@ export default function MembersPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Options</DropdownMenuLabel>
-                              <DropdownMenuItem>View Profile</DropdownMenuItem>
-                              <DropdownMenuItem>Fine History</DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href={`/loans?search=${member.name}`}>Fine History</Link>
+                              </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
                                 className="text-destructive flex items-center gap-2"
@@ -156,8 +158,10 @@ export default function MembersPage() {
                           <span className="text-xs font-semibold text-muted-foreground uppercase">Active Fines</span>
                           <span className="text-lg font-bold text-primary">{getActiveLoanCount(member.id)}</span>
                         </div>
-                        <Button variant="ghost" size="sm" className="text-accent hover:text-accent/80 font-semibold h-8 px-2">
-                          View Details
+                        <Button variant="ghost" size="sm" className="text-accent hover:text-accent/80 font-semibold h-8 px-2" asChild>
+                          <Link href={`/loans?search=${encodeURIComponent(member.name)}`}>
+                            View Details
+                          </Link>
                         </Button>
                       </div>
                     </CardContent>
