@@ -68,9 +68,20 @@ export function AppSidebar() {
       <SidebarFooter className="p-4 border-t border-border">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton className="text-muted-foreground hover:text-primary">
-              <Settings className="h-5 w-5" />
-              <span>Settings</span>
+            <SidebarMenuButton 
+              asChild 
+              isActive={pathname === "/settings"}
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 transition-all",
+                pathname === "/settings" 
+                  ? "bg-primary text-primary-foreground" 
+                  : "text-muted-foreground hover:bg-secondary hover:text-primary"
+              )}
+            >
+              <Link href="/settings">
+                <Settings className="h-5 w-5" />
+                <span>Settings</span>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
