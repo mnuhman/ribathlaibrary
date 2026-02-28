@@ -37,7 +37,7 @@ import { FirestorePermissionError } from "@/firebase/errors"
 const formSchema = z.object({
   title: z.string().min(2, "Title is required"),
   author: z.string().min(2, "Author is required"),
-  isbn: z.string().min(10, "Valid ISBN is required"),
+  isbn: z.string().min(1, "Book No is required"),
   genre: z.string().min(2, "Genre is required"),
   copies: z.coerce.number().min(1, "At least 1 copy required"),
   price: z.coerce.number().min(0, "Price must be positive"),
@@ -171,9 +171,9 @@ export function AddBookDialog() {
                 name="isbn"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>ISBN</FormLabel>
+                    <FormLabel>Book No</FormLabel>
                     <FormControl>
-                      <Input placeholder="9780007525492" {...field} />
+                      <Input placeholder="e.g. LIB-BK-001" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -28,7 +29,7 @@ export default function SearchPage() {
       books: books?.filter(b => 
         (b.title?.toLowerCase() || "").includes(q) || 
         (b.author?.toLowerCase() || "").includes(q) ||
-        (b.isbn || "").includes(q)
+        (b.isbn || "").toLowerCase().includes(q)
       ) || [],
       members: members?.filter(m => 
         (m.name?.toLowerCase() || "").includes(q) || 
@@ -50,7 +51,7 @@ export default function SearchPage() {
         <div className="relative group">
           <SearchIcon className="absolute left-4 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
           <Input 
-            placeholder="Search across books, members, ISBNs, or IDs..." 
+            placeholder="Search across books, members, book numbers, or IDs..." 
             className="pl-12 h-14 text-lg bg-card border-none shadow-lg focus-visible:ring-primary/20"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -88,7 +89,7 @@ export default function SearchPage() {
                           </div>
                           <div>
                             <h3 className="font-semibold">{book.title}</h3>
-                            <p className="text-xs text-muted-foreground">by {book.author} • ISBN: {book.isbn}</p>
+                            <p className="text-xs text-muted-foreground">by {book.author} • Book No: {book.isbn}</p>
                           </div>
                         </div>
                         <Badge variant={book.status === 'Available' ? 'default' : 'outline'}>
@@ -147,7 +148,7 @@ export default function SearchPage() {
             <SearchIcon className="h-16 w-16" />
             <div className="space-y-1">
               <p className="text-xl font-medium">Find everything in one place</p>
-              <p className="text-sm">Search for books, authors, ISBNs, or member details</p>
+              <p className="text-sm">Search for books, authors, book numbers, or member details</p>
             </div>
           </div>
         )}

@@ -91,7 +91,7 @@ export default function CatalogPage() {
           <div className="relative w-full max-w-sm">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input 
-              placeholder="Search by title, author, ISBN..." 
+              placeholder="Search by title, author, book no..." 
               className="pl-10 bg-card border-none shadow-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -133,7 +133,7 @@ export default function CatalogPage() {
                           </div>
                           <div className="flex flex-col">
                             <span className="font-semibold text-base">{book.title}</span>
-                            <span className="text-xs text-muted-foreground">by {book.author} • ISBN: {book.isbn}</span>
+                            <span className="text-xs text-muted-foreground">by {book.author} • Book No: {book.isbn}</span>
                           </div>
                         </div>
                       </TableCell>
