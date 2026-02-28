@@ -13,9 +13,10 @@
         "description": { "type": "string" },
         "copies": { "type": "number" },
         "available": { "type": "number" },
+        "price": { "type": "number" },
         "status": { "type": "string", "enum": ["Available", "Low Stock", "Unavailable"] }
       },
-      "required": ["title", "author", "isbn", "genre", "copies", "available", "status"]
+      "required": ["title", "author", "isbn", "genre", "copies", "available", "status", "price"]
     },
     "Member": {
       "title": "Member",

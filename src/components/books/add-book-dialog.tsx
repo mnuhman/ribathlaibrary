@@ -40,6 +40,7 @@ const formSchema = z.object({
   isbn: z.string().min(10, "Valid ISBN is required"),
   genre: z.string().min(2, "Genre is required"),
   copies: z.coerce.number().min(1, "At least 1 copy required"),
+  price: z.coerce.number().min(0, "Price must be positive"),
   description: z.string().optional(),
 })
 
@@ -56,6 +57,7 @@ export function AddBookDialog() {
       isbn: "",
       genre: "",
       copies: 1,
+      price: 0,
       description: "",
     },
   })
@@ -191,19 +193,34 @@ export function AddBookDialog() {
                 )}
               />
             </div>
-            <FormField
-              control={form.control}
-              name="copies"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Number of Copies</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="copies"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Number of Copies</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Price (INR)</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.01" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={form.control}
               name="description"

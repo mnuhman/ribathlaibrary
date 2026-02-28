@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -106,8 +107,9 @@ export default function CatalogPage() {
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow>
-                  <TableHead className="w-[40%]">Book Details</TableHead>
+                  <TableHead className="w-[30%]">Book Details</TableHead>
                   <TableHead>Genre</TableHead>
+                  <TableHead>Price</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Copies</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -116,7 +118,7 @@ export default function CatalogPage() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-64 text-center">
+                    <TableCell colSpan={6} className="h-64 text-center">
                       <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
                       <p className="mt-2 text-muted-foreground">Loading catalog...</p>
                     </TableCell>
@@ -139,6 +141,9 @@ export default function CatalogPage() {
                         <Badge variant="outline" className="font-medium bg-card border-border">
                           {book.genre}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-semibold text-primary">₹{book.price ? book.price.toFixed(2) : '0.00'}</span>
                       </TableCell>
                       <TableCell>
                         <Badge className={getStatusColor(book.status)}>
@@ -174,7 +179,7 @@ export default function CatalogPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-64 text-center">
+                    <TableCell colSpan={6} className="h-64 text-center">
                       <div className="flex flex-col items-center justify-center space-y-2">
                         <Search className="h-8 w-8 text-muted-foreground" />
                         <p className="text-lg font-medium">No books found</p>
