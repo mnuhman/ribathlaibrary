@@ -41,4 +41,4 @@ A comprehensive, AI-powered library management system built with Next.js, Fireba
    ```
 
 ---
-Built with ❤️ for RIBATH LIBRARY.
+Built with ❤️ for RIBATH LIBRARY .
