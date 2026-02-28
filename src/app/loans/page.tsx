@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -32,7 +31,7 @@ import { collection, doc, updateDoc } from "firebase/firestore"
 import { errorEmitter } from "@/firebase/error-emitter"
 import { FirestorePermissionError } from "@/firebase/errors"
 
-export default function LoansPage() {
+export default function FinesPage() {
   const db = useFirestore()
   
   const loansRef = React.useMemo(() => db ? collection(db, "loans") : null, [db])
@@ -130,8 +129,7 @@ export default function LoansPage() {
           <header className="flex h-16 items-center justify-between border-b bg-card px-6">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
-              <div className="h-4 w-px bg-border" />
-              <h1 className="font-headline text-2xl font-bold text-primary">Loans & Fine Calculation</h1>
+              <h1 className="font-headline text-2xl font-bold text-primary">Fines &amp; Penalties</h1>
             </div>
             <div className="flex gap-2">
               <Button className="gap-2">
@@ -154,7 +152,7 @@ export default function LoansPage() {
               <Card className="border-none shadow-md">
                 <CardContent className="p-6 flex items-center justify-between">
                   <div className="space-y-1">
-                    <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Active Loans</p>
+                    <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Active Records</p>
                     <p className="text-3xl font-bold">{activeLoans.length}</p>
                   </div>
                   <History className="h-10 w-10 text-primary opacity-20" />
@@ -175,7 +173,7 @@ export default function LoansPage() {
               <div className="relative w-full max-w-sm">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input 
-                  placeholder="Search loans by book, member, or status..." 
+                  placeholder="Search by book, member, or status..." 
                   className="pl-10 bg-card border-none shadow-sm"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -269,7 +267,7 @@ export default function LoansPage() {
                     ) : (
                       <TableRow>
                         <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
-                          No loan records found.
+                          No records found.
                         </TableCell>
                       </TableRow>
                     )}

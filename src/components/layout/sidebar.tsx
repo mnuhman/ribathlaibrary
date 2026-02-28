@@ -21,7 +21,7 @@ const navItems = [
   { title: "Dashboard", icon: LayoutDashboard, href: "/" },
   { title: "Catalog", icon: BookOpen, href: "/catalog" },
   { title: "Members", icon: Users, href: "/patrons" },
-  { title: "Loans & Fines", icon: ClipboardList, href: "/loans" },
+  { title: "Fines", icon: ClipboardList, href: "/loans" },
   { title: "Search", icon: Search, href: "/search" },
 ]
 
